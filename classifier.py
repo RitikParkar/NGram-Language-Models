@@ -1,9 +1,13 @@
 from nltk.lm.preprocessing import pad_both_ends, padded_everygram_pipeline, flatten
-import numpy as np
 from nltk.lm import MLE
+from nltk.corpus import stopwords
+import numpy as np
 import argparse
 import random
+import string
+import nltk
 
+nltk.download('stopwords')
 parser = argparse.ArgumentParser(description='Author Text Classification')
 
 parser.add_argument('arg1', help='training data')
@@ -31,14 +35,18 @@ if __name__=='__main__':
 
     for i, file in enumerate(file_list):
         f = open(file, 'r')
-        final_texts[i] = ''
-        dev_texts[i] = ''
+        final_texts[i] = []
+        dev_texts[i] = []
         for x in f:
             r = random.random()
             if r>0.9:
-                final_texts[i] += f.readline()
+                x = x.replace(string.punctuation, '')
+                added_line = [w for w in x if w.lower() not in stopwords.words('English')]
+                final_texts[i] += added_line #you were adding strings not lists. need to add sentence start & end symbols to b/w each line
             else:
-                dev_texts[i] += f.readline()
+                x = x.replace(string.punctuation, '')
+                added_line = [w for w in x if w.lower() not in stopwords.words('English')]
+                dev_texts[i] += added_line
 
     #Train Models
     lm_models = {}
