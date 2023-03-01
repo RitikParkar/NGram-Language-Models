@@ -15,11 +15,12 @@ args = parser.parse_args()
 author_file = args.arg1
 test_file = args.test
 
-def score_dev_set(lm, text, authors_dict, author_name):    
+def score_dev_set(lm, text, authors_dict, author_name, i):    
     predictions = np.array([1 if lm.score(x) > 0.5 else 0 for x in text])
     true_labels = np.array([1 if x in authors_dict[i] else 0 for x in text])
     correct_preds = np.sum(predictions==true_labels)
-    accuracy = correct_preds*100/len(dev_texts)
+    accuracy = correct_preds*100/len(text)
+    #print(f'correct preds:{correct_preds} len text:{len(text)} predictions sum:{np.sum(predictions)}')
     print(f'{author_name}     {accuracy}% correct')
     return 0
 
@@ -37,7 +38,7 @@ if __name__=='__main__':
         dev_authors[i] = []
         for x in f:
             r = random.random()
-            if r>0.9:
+            if r<0.9:
                 x = x.replace(string.punctuation, '')
                 added_line = [w for w in x if w.lower() not in stopwords.words('English')]
                 train_texts[i] += added_line #you were adding strings not lists. need to add sentence start & end symbols to b/w each line
@@ -46,6 +47,7 @@ if __name__=='__main__':
                 added_line = [w for w in x if w.lower() not in stopwords.words('English')]
                 dev_authors[i] += added_line
                 dev_texts += added_line
+        f.close()
 
     #Train Models
     lm_models = {}
@@ -54,7 +56,7 @@ if __name__=='__main__':
         lm = MLE(2)
         lm.fit(train, vocab)
         lm_models[i] = lm
-        score_dev_set(lm, dev_texts, dev_authors, authors_list[i])
+        score_dev_set(lm, dev_texts, dev_authors, authors_list[i], i)
 
     #Testing
     file_names = ['austens', 'dickens', 'tolstoy', 'wilde'] #comment out in final implementation & create author file
